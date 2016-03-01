@@ -4,11 +4,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
-
 #==============================================================================
-# 24 fevrier 2016
+# 1er mars 2016
 # Ce script permet de tracer rapidement les acquisitions experimentales
-# Uniquement modifier l appreil utilise
 #==============================================================================
 
 #==============================================================================
@@ -22,6 +20,16 @@ def Spectro_Anritsu():
     x = 'Longueur d onde (nm)'
     y = 'Intensite (dBm)'
     Id = 'Spectro_Anritsu'
+    return To_skip, Delimit, Couleur, Nom, x, y, Id
+    
+def Spectro_2_4():
+    To_skip = 30
+    Delimit = ','
+    Couleur = 'r'
+    Nom = 'Spectre Optique'
+    x = 'Longueur d onde (nm)'
+    y = 'Intensite (lin scale)'
+    Id = 'Spectro_2_4'
     return To_skip, Delimit, Couleur, Nom, x, y, Id
     
 def Oscillo_LeCroy():
@@ -69,6 +77,30 @@ def Plot(x,y,couleur,titre,xlabel,ylabel):
     plt.ylabel(ylabel)
     plt.show()
     
+def DeviceDetect(filename):
+    with open(filename, 'r') as f:
+        first_line = f.readline()
+    if 'LECROY' in first_line: 
+        print 'Oscilloscope LeCroy reconnu'
+        Appareil = Oscillo_LeCroy()
+    elif 'File,' in first_line: 
+        print 'Spectro Anritsu reconnu'
+        Appareil = Spectro_Anritsu()
+    elif 'CSV,' in first_line: 
+        print 'Spectro 2.4 reconnu'
+        Appareil = Spectro_2_4()
+    elif 'Type;' in first_line: 
+        print 'RF_RohdeSchwarz reconnu'
+        Appareil = RF_RohdeSchwarz()
+    elif '1000' in first_line: 
+        print 'Autoco reconnu'
+        Appareil = Oscillo_autoco()
+    else:
+        print 'Aucun appareil reconnu, autoco choisi'
+        Appareil = Oscillo_autoco()
+    return Appareil
+
+    
 def RecupData(filename,Appareil):
     if Appareil[6] == 'Oscillo_autoco':
         recup = np.loadtxt(filename, skiprows=0)
@@ -91,17 +123,13 @@ def RecupData(filename,Appareil):
         return recup
 
 #==============================================================================
-# Programme A modifier :
+# Programme :
 #==============================================================================
 #   Ouvre la fenetre de choix du fichier a traiter
 filename = OuvrirFenetreChoix()
 
-#   Choix de l appareil utilise - commenter les autres
-
-#Appareil = Spectro_Anritsu()
-#Appareil = Oscillo_LeCroy()
-Appareil = RF_RohdeSchwarz()
-#Appareil = Oscillo_autoco()
+#Lit la premiere ligne du fichier pour en determiner la provenance
+Appareil = DeviceDetect(filename)
 
 #   Recupere les donnees en fonction de l appariel
 data = RecupData(filename,Appareil)
