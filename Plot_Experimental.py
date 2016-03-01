@@ -86,7 +86,7 @@ def DeviceDetect(filename):
     elif 'File,' in first_line: 
         print 'Spectro Anritsu reconnu'
         Appareil = Spectro_Anritsu()
-    elif 'CSV,' in first_line: 
+    elif 'CSV' in first_line: 
         print 'Spectro 2.4 reconnu'
         Appareil = Spectro_2_4()
     elif 'Type;' in first_line: 
