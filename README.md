@@ -1,4 +1,4 @@
 # Plot
 This repository gathers mainly Python scripts which are about plotting experimental and numerical data.
 Requires : Python 2.7 - NumPy - matplotlib - Tkinter - Seaborn
-![Alt text](Images/color.png?raw=true width="200" height="200" "Optional Title")
+<a href="url"><img src="Images/color.png" align="left" height="48" width="48" ></a>
