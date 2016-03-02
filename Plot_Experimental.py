@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
+from scipy.interpolate import splrep, sproot
 #==============================================================================
-# 1er mars 2016
+# 24 fevrier 2016
 # Ce script permet de tracer rapidement les acquisitions experimentales
 #==============================================================================
 
@@ -56,22 +57,46 @@ def Oscillo_autoco():
     To_skip = 4
     Delimit = ';'
     Couleur = 'b'
-    Nom = 'Trace d autocorrelation'
+    Nom = 'Autocorrelation'
     x = 'Temps de retard (ps)'
     y = 'Intensite (u.a.)'
     Id = 'Oscillo_autoco'
+    
     return To_skip, Delimit, Couleur, Nom, x, y, Id
-
+    
+def normalize(fct):
+    """
+        Set function's maximum at 1
+    """
+    return (fct/max(fct))
 
 def OuvrirFenetreChoix():
     Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
     filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
     return filename
 
-def Plot(x,y,couleur,titre,xlabel,ylabel):
-    sns.set_context("talk")
+def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K):
+    """
+        Trace la fonction. Dans le cas d une autoco, un fit polynomial est realise, puis la
+        duree reele FWHM de limpulsion est determinee par division par k
+    """
+    print('k : ',K)
+    ax = plt.axes()
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
-    plt.plot(x,y, label='',marker='',color=couleur)
+    Legende = ''
+    sns.set_context("talk")
+    if Appareil[6] == 'Oscillo_autoco':
+        FWHM = fwhm(x,y,10)
+        print('FWHM : ',(FWHM))
+        ax.arrow(-4*FWHM, 0.5, 3*FWHM, 0, head_width=0.03, head_length=2, fc='r', ec='k')
+        ax.arrow(4*FWHM, 0.5, -3*FWHM, 0, head_width=0.03, head_length=2, fc='r', ec='k')
+        Tps_reel = FWHM/K
+        Legende = '%f'%Tps_reel
+        plt.plot(x,y,marker='',color=couleur,label=r'$\Delta \tau=$'+str(K)+r'$\times $'+Legende+'ps')
+        plt.legend(frameon=True,loc=2)
+    else:
+        plt.plot(x,y,marker='',color=couleur,label='')
+
     plt.title(titre)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
@@ -104,11 +129,23 @@ def DeviceDetect(filename):
 def RecupData(filename,Appareil):
     if Appareil[6] == 'Oscillo_autoco':
         recup = np.loadtxt(filename, skiprows=0)
+        return recup
+    else:
+        recup = np.genfromtxt(filename, delimiter=Appareil[1], skip_header=Appareil[0], skip_footer=0)     
+        return recup
+
+def Autoco(Appareil,recup,conv_factor,base,cases,shape):
+    if shape == 'gauss':
+        K = 1.41
+    elif shape == 'sech':
+        K = 1.55
+
+    if Appareil[6] == 'Oscillo_autoco':
         NbPts = recup[0]
-        datay = recup[4:]/(max(recup[4:]))
+        datay = normalize(recup[4:])
         x=[]
         for i in range(0,datay.size):
-           x.append((float(i)*10*29.5/NbPts)/1.41) 
+           x.append((float(i)*cases*conv_factor*base/NbPts)) 
         x = np.asarray(x)
 
         #Recherche max et met a zero
@@ -116,14 +153,40 @@ def RecupData(filename,Appareil):
         x_norm = x - x[abscisse_max]     
         
         data=np.array([x_norm,datay]).T
-#        Voir pour remplacer datatype par colonnes pour noms
-        return data
+        return data, K
     else:
-        recup = np.genfromtxt(filename, delimiter=Appareil[1], skip_header=Appareil[0], skip_footer=0)     
-        return recup
+        return recup, K
+        
+        
+
+def fwhm(x, y, k=10):
+    """
+    Determine full-with-half-maximum of a peaked set of points, x and y.
+
+    Assumes that there is only one peak present in the datasset.  The function
+    uses a spline interpolation of order k.
+    """
+
+    class MultiplePeaks(Exception): pass
+    class NoPeaksFound(Exception): pass
+
+    half_max = np.amax(y)/2.0
+    s = splrep(x, y - half_max)
+    roots = sproot(s)
+
+    if len(roots) > 2:
+        raise MultiplePeaks("The dataset appears to have multiple peaks, and "
+                "thus the FWHM can't be determined.")
+    elif len(roots) < 2:
+        raise NoPeaksFound("No proper peaks were found in the data set; likely "
+                "the dataset is flat (e.g. all zeros).")
+    else:
+        return abs(roots[1] - roots[0])
+    
+    
 
 #==============================================================================
-# Programme :
+# Programme  :
 #==============================================================================
 #   Ouvre la fenetre de choix du fichier a traiter
 filename = OuvrirFenetreChoix()
@@ -131,8 +194,12 @@ filename = OuvrirFenetreChoix()
 #Lit la premiere ligne du fichier pour en determiner la provenance
 Appareil = DeviceDetect(filename)
 
-#   Recupere les donnees en fonction de l appariel
+#   Recupere les donnees en fonction de l appariel 
 data = RecupData(filename,Appareil)
 
+#Traite dans le cas d une autocorrelation - ne fait rien sinon
+# Parametres : Appareil,data,Nb cases ; facteur conversion ps/ms ; tps/div en ms : gauss ou sech
+result = Autoco(Appareil,data,29.5,1,10,'sech')
+
 #   Trace
-Plot(data[:,0],data[:,1], Appareil[2], Appareil[3], Appareil[4], Appareil[5])
+Plot(result[0][:,0],result[0][:,1], Appareil[2], Appareil[3], Appareil[4], Appareil[5],Appareil,result[1])
