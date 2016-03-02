@@ -13,7 +13,8 @@ For an autocorrelation plot, a polynomial fit is realised to evaluate the FWHM, 
 <br/>
 Code to edit : Autocorrelation parameters at the end. 
 <br/>
-result = Autoco(Appareil,data,29.5,1,10,'sech') with 29.5 the conversion factor in ps/ms, 1 the division duration in ms, 10 the number of cases ans sech the shape (can also be gauss).
+<i>result = Autoco(Appareil,data,29.5,1,10,'sech')</i> <br/>
+ with 29.5 the conversion factor in ps/ms, 1 the division duration in ms, 10 the number of cases ans sech the shape (can also be gauss).
 
 <b>Plot_DFT_Stats.py</b> is made to plot multiple spectra from a known device and/or an intensity distribution histogram
 
@@ -24,6 +25,7 @@ result = Autoco(Appareil,data,29.5,1,10,'sech') with 29.5 the conversion factor 
 <br/>
 Code to edit : in the two last lines,
 <br/>
-Plot_color(0, 2000, filename, Appareil[1], Appareil[0], 1550, Res_Fibre, +0.25, 'lin')
+<i>Plot_color(0, 2000, filename, Appareil[1], Appareil[0], 1550, Res_Fibre, +0.25, 'lin')</i><br/>
+
 with 1550 the central wavelength, +0.25 the offset due to temporal shift, lin the scale (can also be log) and 0, 2000 the span of acquisition.
 Res_Fibre loads the fiber parameters  (eg Fibre_Besancon()) 
