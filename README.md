@@ -11,7 +11,7 @@ For an autocorrelation plot, a polynomial fit is realised to evaluate the FWHM, 
 <a href="url"><img src="Images/spectre_osa.png"  height="300" width="450" ></a>
 <a href="url"><img src="Images/autoco.png"  height="300" width="450" ></a>
 <br/>
-Code to edit : Autocorrelation parameters at the end. 
+- Code to edit : Autocorrelation parameters at the end. 
 <br/>
 <i>result = Autoco(Appareil,data,29.5,1,10,'sech')</i> <br/>
  with 29.5 the conversion factor in ps/ms, 1 the division duration in ms, 10 the number of cases ans sech the shape (can also be gauss).
@@ -23,7 +23,7 @@ Code to edit : Autocorrelation parameters at the end.
 
 <a href="url"><img src="Images/histo.png" height="300" width="450" ></a>
 <br/>
-Code to edit : in the two last lines,
+- Code to edit : in the two last lines,
 <br/>
 <i>Plot_color(0, 2000, filename, Appareil[1], Appareil[0], 1550, Res_Fibre, +0.25, 'lin')</i><br/>
 
