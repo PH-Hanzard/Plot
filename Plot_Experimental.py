@@ -1,3 +1,4 @@
+
 from __future__ import division #Division retourne floating point number
 import numpy as np
 import matplotlib.pyplot as plt
@@ -21,7 +22,8 @@ def Spectro_Anritsu():
     x = 'Longueur d onde (nm)'
     y = 'Intensite (dBm)'
     Id = 'Spectro_Anritsu'
-    return To_skip, Delimit, Couleur, Nom, x, y, Id
+    coef = 1
+    return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
     
 def Spectro_2_4():
     To_skip = 30
@@ -31,27 +33,30 @@ def Spectro_2_4():
     x = 'Longueur d onde (nm)'
     y = 'Intensite (lin scale)'
     Id = 'Spectro_2_4'
-    return To_skip, Delimit, Couleur, Nom, x, y, Id
+    coef = 1
+    return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
     
 def Oscillo_LeCroy():
     To_skip = 6
     Delimit = ','
     Couleur = 'k'
     Nom = 'Trace temporelle'
-    x = 'Temps (s)'
+    x = 'Temps (ns)'
     y = 'Intensite (u.a.)'
     Id = 'Oscillo_LeCroy'
-    return To_skip, Delimit, Couleur, Nom, x, y, Id
+    coef = 1e9
+    return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
     
 def RF_RohdeSchwarz():
     To_skip = 30
     Delimit = ';'
     Couleur = 'g'
     Nom = 'Spectre Radiofrequence'
-    x = 'Frequence (Hz)'
+    x = 'Frequence (MHz)'
     y = 'Intensite (dBm)'
     Id = 'RF_RohdeSchwarz'
-    return To_skip, Delimit, Couleur, Nom, x, y, Id
+    coef = 1e-6
+    return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
     
 def Oscillo_autoco():
     To_skip = 4
@@ -61,8 +66,9 @@ def Oscillo_autoco():
     x = 'Temps de retard (ps)'
     y = 'Intensite (u.a.)'
     Id = 'Oscillo_autoco'
+    coef = 1
     
-    return To_skip, Delimit, Couleur, Nom, x, y, Id
+    return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
     
 def normalize(fct):
     """
@@ -75,7 +81,7 @@ def OuvrirFenetreChoix():
     filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
     return filename
 
-def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K):
+def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
     """
         Trace la fonction. Dans le cas d une autoco, un fit polynomial est realise, puis la
         duree reele FWHM de limpulsion est determinee par division par k
@@ -95,7 +101,10 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K):
         plt.plot(x,y,marker='',color=couleur,label=r'$\Delta \tau=$'+str(K)+r'$\times $'+Legende+'ps')
         plt.legend(frameon=True,loc=2)
     else:
-        plt.plot(x,y,marker='',color=couleur,label='')
+        if scale == 'log':
+            plt.plot(x*coef,10*np.log10(y),marker='',color=couleur,label='')
+        else:
+            plt.plot(x*coef,y,marker='',color=couleur,label='')
 
     plt.title(titre)
     plt.xlabel(xlabel)
@@ -162,7 +171,6 @@ def Autoco(Appareil,recup,conv_factor,base,cases,shape):
 def fwhm(x, y, k=10):
     """
     Determine full-with-half-maximum of a peaked set of points, x and y.
-
     Assumes that there is only one peak present in the datasset.  The function
     uses a spline interpolation of order k.
     """
@@ -199,7 +207,8 @@ data = RecupData(filename,Appareil)
 
 #Traite dans le cas d une autocorrelation - ne fait rien sinon
 # Parametres : Appareil,data,Nb cases ; facteur conversion ps/ms ; tps/div en ms : gauss ou sech
-result = Autoco(Appareil,data,29.5,1,10,'sech')
+result = Autoco(Appareil,data,29.5,1,10,'gauss')
 
 #   Trace
-Plot(result[0][:,0],result[0][:,1], Appareil[2], Appareil[3], Appareil[4], Appareil[5],Appareil,result[1])
+Plot(result[0][:,0],result[0][:,1], Appareil[2], Appareil[3], Appareil[4], Appareil[5],Appareil,result[1],'logg',Appareil[7])
+
