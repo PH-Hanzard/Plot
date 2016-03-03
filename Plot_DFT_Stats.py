@@ -88,9 +88,9 @@ def Plot_color(x_i, x_f, Nom, delimit, skiphead, lambda_centre, Scale, offset, L
         data['x']=((data['x'] * 1e9) / Scale) + lambda_centre + offset
             
         if LogOrLin == 'log':
-            plt.scatter(data['x'], (data['x']*0)+(i/1000.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=0.018, vmax=None))
+            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=0.018, vmax=None))
         else:
-            plt.scatter(data['x'], (data['x']*0)+(i/1000.), c=y_norm, cmap=cm.jet,edgecolor = 'none')
+            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none')
    
         print('%d / %d'%(i,x_f-x_i))
     
