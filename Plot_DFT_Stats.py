@@ -37,6 +37,7 @@ def Oscillo_LeCroy():
     """
     To_skip = 6
     Delimit = ','
+#    Delimit = ' '
     DigitsNom = 5
     extention = '.txt'
     return To_skip, Delimit, DigitsNom, extention
@@ -116,18 +117,46 @@ def Plot_stat(x_i, x_f, Nom, delimit, skiphead):
     plt.ylabel("Number of events")
     plt.show()
     
+    
+def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset):
+    """
+        Trace toutes les courbes
+    """
+    sns.set_context("talk")
+    for i in range(x_i,x_f+1):
+        data = np.genfromtxt(Nom+'%05d.txt'%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
+        y_norm = normalize(data['y'])
+        data['x']=((data['x'] * 1e9) ) + offset        
+        plt.plot(data['x'],y_norm, marker='.',color='k',label='',linewidth=0.0,alpha=0.2) 
+        print('%d / %d'%(i,x_f-x_i))
+
+#    plt.plot(data['x'],tot, marker='.',color='r',label='') 
+    plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
+    plt.title('DFT Signal')
+    plt.xlabel("Time (ns)")
+    plt.ylabel("Intensity (a.u.)")
+    plt.show()
+    
 #==============================================================================
 # Execution
 #==============================================================================
 #Selection fichier
 filename = OuvrirFenetreChoix()
+
 #Detection appareil
 Appareil = DeviceDetect(filename)
+
 #Edite nom en fonction du nb de digits a retirer
 filename = EditNom(filename,Appareil[2])
+
 #Determine echelle a partir de fibre dispersive utilisee
 Res_Fibre =  Fibre_Besancon()
+
 #Plot (Indice initial, Indice final, .., .., Longueur onde centrale, Res_Fibre, offset pour corriger)
-Plot_color(0, 1000, filename, Appareil[1], Appareil[0], 1550, Res_Fibre, +0.25, 'lin')
+#Plot_color(0, 5000, filename, Appareil[1], Appareil[0], 1564, Res_Fibre, -0.29, 'lin')
+
 #Plot histogramme
-Plot_stat(0, 1000, filename, Appareil[1], Appareil[0])
+#Plot_stat(0, 5000, filename, Appareil[1], Appareil[0])
+
+#Plot moyenne
+Plot_Moyenne(0, 500, filename, Appareil[1], Appareil[0], 0)
