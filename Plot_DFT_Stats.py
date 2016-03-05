@@ -60,7 +60,7 @@ def normalize(fct):
     """
         Set function's maximum at 1
     """
-    return (fct/max(fct))
+    return ((fct*1.)/max(fct))
 
 def Fibre_Besancon():
     """
@@ -125,13 +125,14 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset):
     sns.set_context("talk")
     for i in range(x_i,x_f+1):
         data = np.genfromtxt(Nom+'%05d.txt'%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
-        y_norm = normalize(data['y'])
+        y_norm = (data['y'])
         data['x']=((data['x'] * 1e9) ) + offset        
-        plt.plot(data['x'],y_norm, marker='.',color='k',label='',linewidth=0.0,alpha=0.2) 
+        plt.plot(data['x'],y_norm, marker='.',color='c',label='',linewidth=0.0,alpha=0.2) 
         print('%d / %d'%(i,x_f-x_i))
 
 #    plt.plot(data['x'],tot, marker='.',color='r',label='') 
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
+#    plt.axis([-3,3,0,1.5])
     plt.title('DFT Signal')
     plt.xlabel("Time (ns)")
     plt.ylabel("Intensity (a.u.)")
@@ -150,13 +151,14 @@ Appareil = DeviceDetect(filename)
 filename = EditNom(filename,Appareil[2])
 
 #Determine echelle a partir de fibre dispersive utilisee
-Res_Fibre =  Fibre_Besancon()
+#Res_Fibre =  Fibre_Besancon()
+Res_Fibre =  Fibre_Violette()
 
 #Plot (Indice initial, Indice final, .., .., Longueur onde centrale, Res_Fibre, offset pour corriger)
-#Plot_color(0, 5000, filename, Appareil[1], Appareil[0], 1564, Res_Fibre, -0.29, 'lin')
+#Plot_color(0, 10000, filename, Appareil[1], Appareil[0], 1560, Res_Fibre, -5.1, 'lin')
 
 #Plot histogramme
-#Plot_stat(0, 5000, filename, Appareil[1], Appareil[0])
+Plot_stat(0, 10000, filename, Appareil[1], Appareil[0])
 
 #Plot moyenne
-Plot_Moyenne(0, 500, filename, Appareil[1], Appareil[0], 0)
+#Plot_Moyenne(0, 10000, filename, Appareil[1], Appareil[0], 0)
