@@ -20,7 +20,7 @@ def Spectro_Anritsu():
     Couleur = 'r'
     Nom = 'Spectre Optique'
     x = 'Longueur d onde (nm)'
-    y = 'Intensite (dBm)'
+    y = 'Intensite (Lin scale)'
     Id = 'Spectro_Anritsu'
     coef = 1
     return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
@@ -91,6 +91,10 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
     Legende = ''
     sns.set_context("talk")
+    plt.title(titre)
+    plt.xlabel(xlabel)
+
+    
     if Appareil[6] == 'Oscillo_autoco':
         FWHM = fwhm(x,y,10)
         print('FWHM : ',(FWHM))
@@ -102,13 +106,14 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
         plt.legend(frameon=True,loc=2)
     else:
         if scale == 'log':
+            plt.ylabel('Intensite (dB)')
             plt.plot(x*coef,10*np.log10(y),marker='',color=couleur,label='')
+
         else:
             plt.plot(x*coef,y,marker='',color=couleur,label='')
+            plt.ylabel(ylabel)
 
-    plt.title(titre)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
+
     plt.show()
     
 def DeviceDetect(filename):
