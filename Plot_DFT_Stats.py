@@ -151,14 +151,14 @@ Appareil = DeviceDetect(filename)
 filename = EditNom(filename,Appareil[2])
 
 #Determine echelle a partir de fibre dispersive utilisee
-#Res_Fibre =  Fibre_Besancon()
-Res_Fibre =  Fibre_Violette()
+Res_Fibre =  Fibre_Besancon()
+#Res_Fibre =  Fibre_Violette()
 
 #Plot (Indice initial, Indice final, .., .., Longueur onde centrale, Res_Fibre, offset pour corriger)
 #Plot_color(0, 10000, filename, Appareil[1], Appareil[0], 1560, Res_Fibre, -5.1, 'lin')
 
 #Plot histogramme
-Plot_stat(0, 10000, filename, Appareil[1], Appareil[0])
+#Plot_stat(0, 10000, filename, Appareil[1], Appareil[0])
 
 #Plot moyenne
-#Plot_Moyenne(0, 10000, filename, Appareil[1], Appareil[0], 0)
+Plot_Moyenne(0, 200, filename, Appareil[1], Appareil[0], 0)
