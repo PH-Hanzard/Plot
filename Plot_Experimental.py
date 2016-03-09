@@ -216,4 +216,3 @@ result = Autoco(Appareil,data,29.5,1,10,'gauss')
 
 #   Trace
 Plot(result[0][:,0],result[0][:,1], Appareil[2], Appareil[3], Appareil[4], Appareil[5],Appareil,result[1],'logg',Appareil[7])
-
