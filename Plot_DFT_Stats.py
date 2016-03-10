@@ -123,21 +123,37 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset):
         Trace toutes les courbes
     """
     sns.set_context("talk")
+
+#    Teste premier fichier pr declarer tableau moyenne
+    donnees = np.genfromtxt(Nom+'%05d.txt'%x_i, delimiter=delimit, skip_header=skiphead, skip_footer=0)
+    som = [0 for x in range(int(donnees.size/2))]
+    Matrix = [[0 for x in range(int(donnees.size/2))] for x in range(x_f+1-x_i)] 
+    
+#    Recupere toutes les donnes, trace les courbes en scatter et enregistre pr moyenne
     for i in range(x_i,x_f+1):
         data = np.genfromtxt(Nom+'%05d.txt'%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
         y_norm = (data['y'])
+        Matrix[i][:] = y_norm
         data['x']=((data['x'] * 1e9) ) + offset        
         plt.plot(data['x'],y_norm, marker='.',color='c',label='',linewidth=0.0,alpha=0.2) 
         print('%d / %d'%(i,x_f-x_i))
 
-#    plt.plot(data['x'],tot, marker='.',color='r',label='') 
+#   Somme puis moyenne de chaque point
+    for j in range(x_i,x_f+1):    
+        for i in range(int(donnees.size/2)):
+            som[i] = som[i] + Matrix[j][i]
+    
+    for i in range(x_i,x_f+1):   
+        som[i] = som[i] / (x_f-x_i)
+    
+    plt.plot(data['x'],som, marker='',color='k',label='') 
+    
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
-#    plt.axis([-3,3,0,1.5])
     plt.title('DFT Signal')
     plt.xlabel("Time (ns)")
     plt.ylabel("Intensity (a.u.)")
     plt.show()
-    
+
 #==============================================================================
 # Execution
 #==============================================================================
@@ -162,3 +178,4 @@ Res_Fibre =  Fibre_Besancon()
 
 #Plot moyenne
 Plot_Moyenne(0, 200, filename, Appareil[1], Appareil[0], 0)
+
