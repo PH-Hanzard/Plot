@@ -111,7 +111,9 @@ def Plot_stat(x_i, x_f, Nom, delimit, skiphead):
     for i in range(x_i,x_f+1):
         data = np.genfromtxt(Nom+'%05d.txt'%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
         maxi.append(np.max(data['y']))
-    plt.hist(maxi,100, log=True)
+    NbEvents = x_f - x_i
+    plt.hist(maxi,100, log=True, label='Number of events : '+ str(NbEvents))
+    plt.legend(frameon=True,loc=2)
     plt.title('Histogram of DFT spectra')
     plt.xlabel("Max intensity")
     plt.ylabel("Number of events")
@@ -174,8 +176,8 @@ Res_Fibre =  Fibre_Besancon()
 #Plot_color(0, 10000, filename, Appareil[1], Appareil[0], 1560, Res_Fibre, -5.1, 'lin')
 
 #Plot histogramme
-#Plot_stat(0, 10000, filename, Appareil[1], Appareil[0])
+Plot_stat(0, 200, filename, Appareil[1], Appareil[0])
 
 #Plot moyenne
-Plot_Moyenne(0, 200, filename, Appareil[1], Appareil[0], 0)
+#Plot_Moyenne(0, 200, filename, Appareil[1], Appareil[0], 0)
 
