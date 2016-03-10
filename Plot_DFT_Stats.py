@@ -145,7 +145,7 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset):
         for i in range(int(donnees.size/2)):
             som[i] = som[i] + Matrix[j][i]
     
-    for i in range(x_i,x_f+1):   
+    for i in range(int(donnees.size/2)):   
         som[i] = som[i] / (x_f-x_i)
     
     plt.plot(data['x'],som, marker='',color='k',label='') 
@@ -173,11 +173,11 @@ Res_Fibre =  Fibre_Besancon()
 #Res_Fibre =  Fibre_Violette()
 
 #Plot (Indice initial, Indice final, .., .., Longueur onde centrale, Res_Fibre, offset pour corriger)
-#Plot_color(0, 10000, filename, Appareil[1], Appareil[0], 1560, Res_Fibre, -5.1, 'lin')
+#Plot_color(0, 1000, filename, Appareil[1], Appareil[0], 1560, Res_Fibre, -5.1, 'lin')
 
 #Plot histogramme
-Plot_stat(0, 200, filename, Appareil[1], Appareil[0])
+#Plot_stat(0, 1000, filename, Appareil[1], Appareil[0])
 
 #Plot moyenne
-#Plot_Moyenne(0, 200, filename, Appareil[1], Appareil[0], 0)
+Plot_Moyenne(0, 1000, filename, Appareil[1], Appareil[0], 0)
 
