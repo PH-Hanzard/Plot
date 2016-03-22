@@ -6,6 +6,8 @@ import seaborn as sns
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
 from scipy.interpolate import splrep, sproot
+from pylab import rcParams
+rcParams['figure.figsize'] =8.6,9.6
 #==============================================================================
 # 24 fevrier 2016
 # Ce script permet de tracer rapidement les acquisitions experimentales
@@ -106,6 +108,8 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
         Legende = '%f'%Tps_reel
         plt.plot(x,y,marker='',color=couleur,label=r'$\Delta \tau=$'+str(K)+r'$\times $'+Legende+'ps')
         plt.legend(frameon=True,loc=2)
+        plt.ylabel(ylabel, fontsize=18)
+
     else:
         if scale == 'log':
             plt.ylabel('Intensite (dB)',fontsize=18)
