@@ -1,4 +1,4 @@
-
+# -*- coding: utf-8 -*-
 from __future__ import division #Division retourne floating point number
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,8 +19,8 @@ def Spectro_Anritsu():
     Delimit = ','
     Couleur = 'r'
     Nom = 'Spectre Optique'
-    x = 'Longueur d onde (nm)'
-    y = 'Intensite (Lin scale)'
+    x = u"Longueur d'onde (nm)"
+    y = u'Intensité (Echelle linéaire)'
     Id = 'Spectro_Anritsu'
     coef = 1
     return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
@@ -30,8 +30,8 @@ def Spectro_2_4():
     Delimit = ','
     Couleur = 'r'
     Nom = 'Spectre Optique'
-    x = 'Longueur d onde (nm)'
-    y = 'Intensite (lin scale)'
+    x = u"Longueur d'onde (nm)"
+    y = u'Intensité (Echelle linéaire)'
     Id = 'Spectro_2_4'
     coef = 1
     return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
@@ -41,19 +41,19 @@ def Oscillo_LeCroy():
     Delimit = ','
     Couleur = 'k'
     Nom = 'Trace temporelle'
-    x = 'Temps (ns)'
-    y = 'Intensite (u.a.)'
+    x = 'Temps (us)'
+    y =  u'Intensité (u.a.)'
     Id = 'Oscillo_LeCroy'
-    coef = 1e9
+    coef = 1e6
     return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
     
 def RF_RohdeSchwarz():
     To_skip = 30
     Delimit = ';'
     Couleur = 'g'
-    Nom = 'Spectre Radiofrequence'
-    x = 'Frequence (MHz)'
-    y = 'Intensite (dBm)'
+    Nom = u'Spectre Radiofréquence'
+    x = u'Fréquence (MHz)'
+    y = u'Intensité (dBm)'
     Id = 'RF_RohdeSchwarz'
     coef = 1e-6
     return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
@@ -62,9 +62,9 @@ def Oscillo_autoco():
     To_skip = 4
     Delimit = ';'
     Couleur = 'b'
-    Nom = 'Autocorrelation'
+    Nom = u'Autocorrélation'
     x = 'Temps de retard (ps)'
-    y = 'Intensite (u.a.)'
+    y = u'Intensité (u.a.)'
     Id = 'Oscillo_autoco'
     coef = 1
     
@@ -87,12 +87,14 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
         duree reele FWHM de limpulsion est determinee par division par k
     """
     print('k : ',K)
+    sns.set_style("ticks")
     ax = plt.axes()
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
     Legende = ''
-    sns.set_context("talk")
-    plt.title(titre)
-    plt.xlabel(xlabel)
+    sns.set_context("poster")
+#    sns.set_context("notebook", font_scale=1.5, rc={"lines.linewidth": 2.5})
+    plt.title(titre, fontweight='bold', y=1.05)
+    plt.xlabel(xlabel, fontsize=18)
 
     
     if Appareil[6] == 'Oscillo_autoco':
@@ -106,14 +108,14 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
         plt.legend(frameon=True,loc=2)
     else:
         if scale == 'log':
-            plt.ylabel('Intensite (dB)')
+            plt.ylabel('Intensite (dB)',fontsize=18)
             plt.plot(x*coef,10*np.log10(y),marker='',color=couleur,label='')
 
         else:
             plt.plot(x*coef,y,marker='',color=couleur,label='')
-            plt.ylabel(ylabel)
-
-
+            plt.ylabel(ylabel, fontsize=18)
+    ax.tick_params(axis='x', labelsize=18)
+    ax.tick_params(axis='y', labelsize=18)
     plt.show()
     
 def DeviceDetect(filename):
@@ -216,3 +218,4 @@ result = Autoco(Appareil,data,29.5,1,10,'gauss')
 
 #   Trace
 Plot(result[0][:,0],result[0][:,1], Appareil[2], Appareil[3], Appareil[4], Appareil[5],Appareil,result[1],'logg',Appareil[7])
+
