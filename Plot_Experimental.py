@@ -7,7 +7,7 @@ from Tkinter import Tk
 from tkFileDialog import askopenfilename
 from scipy.interpolate import splrep, sproot
 from pylab import rcParams
-rcParams['figure.figsize'] =5,5
+#rcParams['figure.figsize'] =5,5
 #==============================================================================
 # 24 fevrier 2016
 # Ce script permet de tracer rapidement les acquisitions experimentales
@@ -106,10 +106,10 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
     ax = plt.axes()
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
     Legende = ''
-    sns.set_context("poster")
+    sns.set_context("talk")
 #    sns.set_context("notebook", font_scale=1.5, rc={"lines.linewidth": 2.5})
 #    plt.title(titre, fontweight='bold', y=1.05)
-    plt.xlabel(xlabel, fontsize=25)
+    plt.xlabel(xlabel, fontsize=15)
 
     
     if Appareil[6] == 'Oscillo_autoco':
@@ -121,18 +121,18 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
         Legende = '%f'%Tps_reel
         plt.plot(x,y,marker='',color=couleur,label=r'$\Delta \tau=$'+str(K)+r'$\times $'+Legende+'ps')
 #        plt.legend(frameon=True,loc=2)
-        plt.ylabel(ylabel, fontsize=25)
+        plt.ylabel(ylabel, fontsize=15)
 
     else:
         if scale == 'log':
-            plt.ylabel('Intensite (dB)',fontsize=25)
+            plt.ylabel('Intensite (dB)',fontsize=15)
             plt.plot(x*coef,10*np.log10(y),marker='',color=couleur,label='')
 
         else:
             plt.plot(x*coef,y,marker='',color=couleur,label='')
-            plt.ylabel(ylabel, fontsize=25)
-    ax.tick_params(axis='x', labelsize=25)
-    ax.tick_params(axis='y', labelsize=25)
+            plt.ylabel(ylabel, fontsize='15')
+    ax.tick_params(axis='x', labelsize='15')
+    ax.tick_params(axis='y', labelsize='15')
     plt.show()
     
 def DeviceDetect(filename):
