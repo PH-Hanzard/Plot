@@ -42,6 +42,17 @@ def Oscillo_LeCroy():
     extention = '.txt'
     return To_skip, Delimit, DigitsNom, extention
     
+def Oscillo_Keysight():
+    """
+        Caracteristiques de l oscilloscope LeCroy
+    """
+    To_skip = 0
+    Delimit = ','
+#    Delimit = ' '
+    DigitsNom = 5
+    extention = '.csv'
+    return To_skip, Delimit, DigitsNom, extention
+    
 def DeviceDetect(filename):
     """
         Lit la premiere ligne du fichier pour detecter sa provenance
@@ -52,10 +63,10 @@ def DeviceDetect(filename):
         print 'Oscilloscope LeCroy reconnu'
         Appareil = Oscillo_LeCroy()
     else:
-        print 'Aucun appareil reconnu'
-        Appareil = False
+        print 'Keysight choisi'
+#        Appareil = False
+        Appareil = Oscillo_Keysight()
     return Appareil
-
 def normalize(fct):
     """
         Set function's maximum at 1
@@ -70,6 +81,14 @@ def Fibre_Besancon():
     D = - 150
     return Longueur * D * 1e-3
     
+def Fibre_Lille():
+    """
+        Caracteristiques fibre DFT. Retourne D * L en ns/nm
+    """
+    Longueur = 1
+    D = - 429
+    return Longueur * D * 1e-3
+    
 def Fibre_Violette():
     """
         Caracteristiques fibre DFT. Retourne D * L en ns/nm
@@ -78,13 +97,15 @@ def Fibre_Violette():
     D = - 91
     return Longueur * D * 1e-3
     
-def Plot_color(x_i, x_f, Nom, delimit, skiphead, lambda_centre, Scale, offset, LogOrLin):
+def Plot_color(x_i, x_f, Nom, delimit, skiphead, lambda_centre, Scale, offset, LogOrLin, extension):
     """
         Trace l intensite du spectre au fil des tours de cavite
     """
     sns.set_context("talk")
     for i in range(x_i,x_f+1):
-        data = np.genfromtxt(Nom+'%05d.txt'%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
+#        data = np.genfromtxt(Nom+'%05d.csv'%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
+        data = np.genfromtxt((Nom+'%05d'+extension)%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
+
         y_norm = normalize(data['y'])
         data['x']=((data['x'] * 1e9) / Scale) + lambda_centre + offset
             
@@ -102,14 +123,14 @@ def Plot_color(x_i, x_f, Nom, delimit, skiphead, lambda_centre, Scale, offset, L
     plt.colorbar()
     plt.show()
     
-def Plot_stat(x_i, x_f, Nom, delimit, skiphead):
+def Plot_stat(x_i, x_f, Nom, delimit, skiphead, extension):
     """
         Trace l histogramme des intensites max
     """
     sns.set_context("talk")
     maxi=[]
     for i in range(x_i,x_f+1):
-        data = np.genfromtxt(Nom+'%05d.txt'%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
+        data = np.genfromtxt((Nom+'%05d'+extension)%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
         maxi.append(np.max(data['y']))
     NbEvents = x_f - x_i
     plt.hist(maxi,100, log=True, label='Number of events : '+ str(NbEvents))
@@ -120,20 +141,20 @@ def Plot_stat(x_i, x_f, Nom, delimit, skiphead):
     plt.show()
     
     
-def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset):
+def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset, extension):
     """
         Trace toutes les courbes
     """
     sns.set_context("talk")
 
 #    Teste premier fichier pr declarer tableau moyenne
-    donnees = np.genfromtxt(Nom+'%05d.txt'%x_i, delimiter=delimit, skip_header=skiphead, skip_footer=0)
+    donnees = np.genfromtxt((Nom+'%05d'+extension)%x_i, delimiter=delimit, skip_header=skiphead, skip_footer=0)
     som = [0 for x in range(int(donnees.size/2))]
     Matrix = [[0 for x in range(int(donnees.size/2))] for x in range(x_f+1-x_i)] 
     
 #    Recupere toutes les donnes, trace les courbes en scatter et enregistre pr moyenne
     for i in range(x_i,x_f+1):
-        data = np.genfromtxt(Nom+'%05d.txt'%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
+        data = np.genfromtxt((Nom+'%05d'+extension)%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
         y_norm = (data['y'])
         Matrix[i][:] = y_norm
         data['x']=((data['x'] * 1e9) ) + offset        
@@ -142,10 +163,10 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset):
 
 #   Somme puis moyenne de chaque point
     for j in range(x_i,x_f+1):    
-        for i in range(int(donnees.size/2)):
+        for i in range(int((donnees.size)/2)):
             som[i] = som[i] + Matrix[j][i]
     
-    for i in range(int(donnees.size/2)):   
+    for i in range(int((donnees.size)/2)):   
         som[i] = som[i] / (x_f-x_i)
     
     plt.plot(data['x'],som, marker='',color='k',label='') 
@@ -169,15 +190,16 @@ Appareil = DeviceDetect(filename)
 filename = EditNom(filename,Appareil[2])
 
 #Determine echelle a partir de fibre dispersive utilisee
-Res_Fibre =  Fibre_Besancon()
+#Res_Fibre =  Fibre_Besancon()
 #Res_Fibre =  Fibre_Violette()
+Res_Fibre =  Fibre_Lille()
 
 #Plot (Indice initial, Indice final, .., .., Longueur onde centrale, Res_Fibre, offset pour corriger)
-#Plot_color(0, 1000, filename, Appareil[1], Appareil[0], 1560, Res_Fibre, -5.1, 'lin')
+Plot_color(0, 2000, filename, Appareil[1], Appareil[0], 1559, Res_Fibre, 3.1, 'lin', Appareil[3])
 
 #Plot histogramme
-#Plot_stat(0, 1000, filename, Appareil[1], Appareil[0])
+Plot_stat(0, 2000, filename, Appareil[1], Appareil[0], Appareil[3])
 
 #Plot moyenne
-Plot_Moyenne(0, 1000, filename, Appareil[1], Appareil[0], 0)
+Plot_Moyenne(0, 2000, filename, Appareil[1], Appareil[0], 0, Appareil[3])
 
