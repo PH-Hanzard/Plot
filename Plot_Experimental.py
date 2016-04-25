@@ -7,7 +7,7 @@ from Tkinter import Tk
 from tkFileDialog import askopenfilename
 from scipy.interpolate import splrep, sproot
 from pylab import rcParams
-rcParams['figure.figsize'] =8.6,9.6
+rcParams['figure.figsize'] =5,5
 #==============================================================================
 # 24 fevrier 2016
 # Ce script permet de tracer rapidement les acquisitions experimentales
@@ -48,6 +48,19 @@ def Oscillo_LeCroy():
     Id = 'Oscillo_LeCroy'
     coef = 1e6
     return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
+    
+def Oscillo_Keysight():
+    To_skip = 0
+    Delimit = ','
+    Couleur = 'k'
+    Nom = 'Trace temporelle'
+    x = 'Temps (us)'
+    y =  u'Intensité (u.a.)'
+    Id = 'Oscillo_Keysight'
+    coef = 1e6
+    return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
+    
+    
     
 def RF_RohdeSchwarz():
     To_skip = 30
@@ -95,8 +108,8 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
     Legende = ''
     sns.set_context("poster")
 #    sns.set_context("notebook", font_scale=1.5, rc={"lines.linewidth": 2.5})
-    plt.title(titre, fontweight='bold', y=1.05)
-    plt.xlabel(xlabel, fontsize=18)
+#    plt.title(titre, fontweight='bold', y=1.05)
+    plt.xlabel(xlabel, fontsize=25)
 
     
     if Appareil[6] == 'Oscillo_autoco':
@@ -107,19 +120,19 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
         Tps_reel = FWHM/K
         Legende = '%f'%Tps_reel
         plt.plot(x,y,marker='',color=couleur,label=r'$\Delta \tau=$'+str(K)+r'$\times $'+Legende+'ps')
-        plt.legend(frameon=True,loc=2)
-        plt.ylabel(ylabel, fontsize=18)
+#        plt.legend(frameon=True,loc=2)
+        plt.ylabel(ylabel, fontsize=25)
 
     else:
         if scale == 'log':
-            plt.ylabel('Intensite (dB)',fontsize=18)
+            plt.ylabel('Intensite (dB)',fontsize=25)
             plt.plot(x*coef,10*np.log10(y),marker='',color=couleur,label='')
 
         else:
             plt.plot(x*coef,y,marker='',color=couleur,label='')
-            plt.ylabel(ylabel, fontsize=18)
-    ax.tick_params(axis='x', labelsize=18)
-    ax.tick_params(axis='y', labelsize=18)
+            plt.ylabel(ylabel, fontsize=25)
+    ax.tick_params(axis='x', labelsize=25)
+    ax.tick_params(axis='y', labelsize=25)
     plt.show()
     
 def DeviceDetect(filename):
@@ -141,8 +154,8 @@ def DeviceDetect(filename):
         print 'Autoco reconnu'
         Appareil = Oscillo_autoco()
     else:
-        print 'Aucun appareil reconnu, autoco choisi'
-        Appareil = Oscillo_autoco()
+        print 'Aucun appareil reconnu, Oscillo_Keysight choisi'
+        Appareil = Oscillo_Keysight()
     return Appareil
 
     
