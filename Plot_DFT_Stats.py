@@ -219,7 +219,7 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y 
         Appareil_spectre = DeviceDetect(FichierSpectre)
         result_spectre = RecupData(FichierSpectre,Appareil_spectre)
 #        plt.plot(result_spectre[0],result_spectre[1]) 
-        ax1.plot(result_spectre[0][:,0],(10**(result_spectre[0][:,1]/10.)*facteur_spect)+offset_spect_y,color='r') 
+        ax1.plot(result_spectre[0][:,0],(10**(result_spectre[0][:,1]/20.)*facteur_spect)+offset_spect_y,color='r') 
 
     
 
@@ -247,11 +247,11 @@ filename = EditNom(filename,Appareil[2])
 Res_Fibre =  Fibre_Lille()
 
 #Plot (Indice initial, Indice final, .., .., Longueur onde centrale, Res_Fibre, offset pour corriger)
-Plot_color(0, 3999, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 2, 'log', Appareil[3])
+#Plot_color(0, 3999, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 2, 'log', Appareil[3])
 
 #Plot histogramme
-Plot_stat(0, 3999, filename, Appareil[1], Appareil[0], Appareil[3])
+#Plot_stat(0, 3999, filename, Appareil[1], Appareil[0], Appareil[3])
 
 #Plot moyenne
-Plot_Moyenne(0, 1999, filename, Appareil[1], Appareil[0], -7,0.179,6, Appareil[3],'spectre', 1567, Res_Fibre)
+Plot_Moyenne(0, 1999, filename, Appareil[1], Appareil[0], -7,0.179,0.7, Appareil[3],'spectre', 1567, Res_Fibre)
 
