@@ -110,7 +110,7 @@ def Plot_color(x_i, x_f, Nom, delimit, skiphead, lambda_centre, Scale, offset, L
         data['x']=((data['x'] * 1e9) / Scale) + lambda_centre + offset
             
         if LogOrLin == 'log':
-            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=0.018, vmax=None))
+            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=None, vmax=None))
         else:
             plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none')
    
@@ -195,11 +195,11 @@ filename = EditNom(filename,Appareil[2])
 Res_Fibre =  Fibre_Lille()
 
 #Plot (Indice initial, Indice final, .., .., Longueur onde centrale, Res_Fibre, offset pour corriger)
-Plot_color(0, 2000, filename, Appareil[1], Appareil[0], 1559, Res_Fibre, 3.1, 'lin', Appareil[3])
+Plot_color(0, 3999, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 2, 'log', Appareil[3])
 
 #Plot histogramme
-Plot_stat(0, 2000, filename, Appareil[1], Appareil[0], Appareil[3])
+#Plot_stat(0, 3999, filename, Appareil[1], Appareil[0], Appareil[3])
 
 #Plot moyenne
-Plot_Moyenne(0, 2000, filename, Appareil[1], Appareil[0], 0, Appareil[3])
+#Plot_Moyenne(0, 3999, filename, Appareil[1], Appareil[0], 0, Appareil[3])
 
