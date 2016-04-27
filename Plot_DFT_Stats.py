@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import division #Division retourne floating point number
 import numpy as np
 import matplotlib
@@ -53,6 +54,28 @@ def Oscillo_Keysight():
     extention = '.csv'
     return To_skip, Delimit, DigitsNom, extention
     
+def Spectro_Anritsu():
+    To_skip = 25
+    Delimit = ','
+    Couleur = 'r'
+    Nom = 'Spectre Optique'
+    x = u"Longueur d'onde (nm)"
+    y = u'Intensité (Echelle linéaire)'
+    Id = 'Spectro_Anritsu'
+    coef = 1
+    return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
+    
+def Spectro_2_4():
+    To_skip = 30
+    Delimit = ','
+    Couleur = 'r'
+    Nom = 'Spectre Optique'
+    x = u"Longueur d'onde (nm)"
+    y = u'Intensité (Echelle linéaire)'
+    Id = 'Spectro_2_4'
+    coef = 1
+    return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
+    
 def DeviceDetect(filename):
     """
         Lit la premiere ligne du fichier pour detecter sa provenance
@@ -62,11 +85,26 @@ def DeviceDetect(filename):
     if 'LECROY' in first_line: 
         print 'Oscilloscope LeCroy reconnu'
         Appareil = Oscillo_LeCroy()
+    elif 'File,' in first_line: 
+        print 'Spectro Anritsu reconnu'
+        Appareil = Spectro_Anritsu()
+    elif 'CSV' in first_line: 
+        print 'Spectro 2.4 reconnu'
+        Appareil = Spectro_2_4()
     else:
         print 'Keysight choisi'
 #        Appareil = False
         Appareil = Oscillo_Keysight()
     return Appareil
+    
+def RecupData(filename,Appareil):
+    if Appareil[6] == 'Oscillo_autoco':
+        recup = np.loadtxt(filename, skiprows=0)
+        return recup
+    else:
+        recup = np.genfromtxt(filename, delimiter=Appareil[1], skip_header=Appareil[0], skip_footer=0)     
+        return recup, 1
+    
 def normalize(fct):
     """
         Set function's maximum at 1
@@ -141,12 +179,13 @@ def Plot_stat(x_i, x_f, Nom, delimit, skiphead, extension):
     plt.show()
     
     
-def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset, extension):
+def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y , facteur_spect, extension,spectrumornot, lambda_centre, Scale):
     """
         Trace toutes les courbes
     """
     sns.set_context("talk")
 
+    fig, ax1 = plt.subplots()
 #    Teste premier fichier pr declarer tableau moyenne
     donnees = np.genfromtxt((Nom+'%05d'+extension)%x_i, delimiter=delimit, skip_header=skiphead, skip_footer=0)
     som = [0 for x in range(int(donnees.size/2))]
@@ -155,10 +194,11 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset, extension):
 #    Recupere toutes les donnes, trace les courbes en scatter et enregistre pr moyenne
     for i in range(x_i,x_f+1):
         data = np.genfromtxt((Nom+'%05d'+extension)%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
-        y_norm = (data['y'])
+        y_norm = (data['y']) 
         Matrix[i][:] = y_norm
-        data['x']=((data['x'] * 1e9) ) + offset        
-        plt.plot(data['x'],y_norm, marker='.',color='c',label='',linewidth=0.0,alpha=0.2) 
+#        data['x']=((data['x'] * 1e9) ) + offset
+        data['x']=((data['x']* 1e9) / Scale) + lambda_centre  + offset_spect_x       
+        ax1.plot(data['x'],y_norm, marker='.',color='c',label='',linewidth=0.0,alpha=0.2) 
         print('%d / %d'%(i,x_f-x_i))
 
 #   Somme puis moyenne de chaque point
@@ -169,8 +209,20 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset, extension):
     for i in range(int((donnees.size)/2)):   
         som[i] = som[i] / (x_f-x_i)
     
-    plt.plot(data['x'],som, marker='',color='k',label='') 
+    ax1.plot(data['x'],som, marker='',color='k',label='') 
     
+#    Ajout spectre OSA
+    
+    if spectrumornot == 'spectre':
+#        ax2 = ax1.twinx()
+        FichierSpectre = OuvrirFenetreChoix()
+        Appareil_spectre = DeviceDetect(FichierSpectre)
+        result_spectre = RecupData(FichierSpectre,Appareil_spectre)
+#        plt.plot(result_spectre[0],result_spectre[1]) 
+        ax1.plot(result_spectre[0][:,0],(10**(result_spectre[0][:,1]/10.)*facteur_spect)+offset_spect_y,color='r') 
+
+    
+
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
     plt.title('DFT Signal')
     plt.xlabel("Time (ns)")
@@ -198,8 +250,8 @@ Res_Fibre =  Fibre_Lille()
 Plot_color(0, 3999, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 2, 'log', Appareil[3])
 
 #Plot histogramme
-#Plot_stat(0, 3999, filename, Appareil[1], Appareil[0], Appareil[3])
+Plot_stat(0, 3999, filename, Appareil[1], Appareil[0], Appareil[3])
 
 #Plot moyenne
-#Plot_Moyenne(0, 3999, filename, Appareil[1], Appareil[0], 0, Appareil[3])
+Plot_Moyenne(0, 1999, filename, Appareil[1], Appareil[0], -7,0.179,6, Appareil[3],'spectre', 1567, Res_Fibre)
 
