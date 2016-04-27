@@ -127,6 +127,10 @@ def Plot(x,y,couleur,titre,xlabel,ylabel,Appareil,K,scale,coef):
         if scale == 'log':
             plt.ylabel('Intensite (dB)',fontsize=15)
             plt.plot(x*coef,10*np.log10(y),marker='',color=couleur,label='')
+            
+        if scale == 'lin':
+            plt.ylabel('Intensite (lin scale)',fontsize=15)
+            plt.plot(x*coef,10**(y/10.),marker='',color=couleur,label='')
 
         else:
             plt.plot(x*coef,y,marker='',color=couleur,label='')
@@ -234,5 +238,5 @@ data = RecupData(filename,Appareil)
 result = Autoco(Appareil,data,29.5,1,10,'gauss')
 
 #   Trace
-Plot(result[0][:,0],result[0][:,1], Appareil[2], Appareil[3], Appareil[4], Appareil[5],Appareil,result[1],'logg',Appareil[7])
+Plot(result[0][:,0],result[0][:,1], Appareil[2], Appareil[3], Appareil[4], Appareil[5],Appareil,result[1],'lin',Appareil[7])
 
