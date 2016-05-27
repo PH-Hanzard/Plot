@@ -5,7 +5,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import seaborn as sns
+from pylab import *
+from pylab import pcolor, show, colorbar, xticks, yticks
 from Tkinter import Tk
+from numpy import corrcoef, sum, log, arange
 from tkFileDialog import askopenfilename
 #==============================================================================
 # 010316 -- PLOT SERIE COURBES SCATTERING -
@@ -148,7 +151,7 @@ def Plot_color(x_i, x_f, Nom, delimit, skiphead, lambda_centre, Scale, offset, L
         data['x']=((data['x'] * 1e9) / Scale) + lambda_centre + offset
             
         if LogOrLin == 'log':
-            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=None, vmax=None))
+            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=None, vmax=1.0368))
         else:
             plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none')
    
@@ -229,6 +232,29 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y 
     plt.ylabel("Intensity (a.u.)")
     plt.show()
 
+def Plot_corr(x_i, x_f, Nom, delimit,Res_fibre, skiphead, extension, lambda_centre, offset):
+    donnees = np.genfromtxt((Nom+'%05d'+extension)%x_i, delimiter=delimit, skip_header=skiphead, skip_footer=0)
+    Matrix_2 = [[0 for x in range(x_f+1-x_i)] for x in range(int(donnees.size/2))]
+
+    for i in range(x_i,x_f+1):
+        data = np.genfromtxt((Nom+'%05d'+extension)%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
+        y_norm = (data['y']) 
+        for j in range(int(donnees.size/2)):
+            Matrix_2[j][i-x_i] = y_norm[j]
+        print('%d / %d'%(i,x_f))
+    fig, ax = plt.subplots()
+    R = corrcoef(Matrix_2)
+    R_f = np.rot90(R,2)
+    
+#pcolormesh mieux que pcolor, plus rapide
+    pcolormesh(R_f, cmap='seismic')
+#pcolormesh(R_f, cmap='flag')
+    colorbar()    
+    ticks_x = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format((x*0.1/(abs(Res_Fibre))+1500+offset)))
+    ax.xaxis.set_major_formatter(ticks_x)
+    ticks_y = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format((x*0.1/(abs(Res_Fibre))+1500+offset)))
+    ax.yaxis.set_major_formatter(ticks_y)
+    show()
 #==============================================================================
 # Execution
 #==============================================================================
@@ -247,11 +273,13 @@ filename = EditNom(filename,Appareil[2])
 Res_Fibre =  Fibre_Lille()
 
 #Plot (Indice initial, Indice final, .., .., Longueur onde centrale, Res_Fibre, offset pour corriger)
-#Plot_color(0, 3999, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 2, 'log', Appareil[3])
+Plot_color(0, 1999, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 0, 'loge', Appareil[3])
 
 #Plot histogramme
-#Plot_stat(0, 3999, filename, Appareil[1], Appareil[0], Appareil[3])
+Plot_stat(0, 4999, filename, Appareil[1], Appareil[0], Appareil[3])
 
 #Plot moyenne
-Plot_Moyenne(0, 1999, filename, Appareil[1], Appareil[0], -7,0.179,0.7, Appareil[3],'spectre', 1567, Res_Fibre)
+Plot_Moyenne(0, 200, filename, Appareil[1], Appareil[0], -6,0.09,0.8, Appareil[3],'sp1ectre', 1567, Res_Fibre)
 
+#Plot_Moyenne(,offset_spect_x,offset_spect_y , facteur_spect, extension,spectrumornot, lambda_centre, Scale):
+Plot_corr(0,200, filename, Appareil[1], Res_Fibre, Appareil[0], Appareil[3], 1550, 2)
