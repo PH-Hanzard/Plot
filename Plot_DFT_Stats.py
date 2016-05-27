@@ -34,6 +34,15 @@ def EditNom(filename,Nb):
     """
     filename = filename[:-Nb-4]
     return filename
+
+
+def RecupData(filename,Appareil):
+    if Appareil[6] == 'Oscillo_autoco':
+        recup = np.loadtxt(filename, skiprows=0)
+        return recup
+    else:
+        recup = np.genfromtxt(filename, delimiter=Appareil[1], skip_header=Appareil[0], skip_footer=0)     
+        return recup, 1
     
 def Oscillo_LeCroy():
     """
@@ -45,6 +54,7 @@ def Oscillo_LeCroy():
     DigitsNom = 5
     extention = '.txt'
     return To_skip, Delimit, DigitsNom, extention
+
     
 def Oscillo_Keysight():
     """
@@ -190,7 +200,7 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y 
     for i in range(x_i,x_f+1):
         data = np.genfromtxt((Nom+'%05d'+extension)%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
         y_norm = (data['y']) 
-        Matrix[i][:] = y_norm
+        Matrix[i-x_i][:] = y_norm
 #        data['x']=((data['x'] * 1e9) ) + offset
         data['x']=((data['x']* 1e9) / Scale) + lambda_centre  + offset_spect_x       
         ax1.plot(data['x'],y_norm, marker='.',color='c',label='',linewidth=0.0,alpha=0.2) 
@@ -199,7 +209,7 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y 
 #   Somme puis moyenne de chaque point
     for j in range(x_i,x_f+1):    
         for i in range(int((donnees.size)/2)):
-            som[i] = som[i] + Matrix[j][i]
+            som[i] = som[i] + Matrix[j-x_i][i]
     
     for i in range(int((donnees.size)/2)):   
         som[i] = som[i] / (x_f-x_i)
@@ -215,7 +225,6 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y 
         result_spectre = RecupData(FichierSpectre,Appareil_spectre)
 #        plt.plot(result_spectre[0],result_spectre[1]) 
         ax1.plot(result_spectre[0][:,0],(10**(result_spectre[0][:,1]/20.)*facteur_spect)+offset_spect_y,color='r') 
-
     
 
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
@@ -265,13 +274,13 @@ filename = EditNom(filename,Appareil[2])
 Res_Fibre =  Fibre_Lille()
 
 #Plot couleur : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper, lambd centre, caract fibre, offset, log ou autre)
-Plot_color(0, 200, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 0, 'loge', Appareil[3])
+Plot_color(100, 200, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 0, 'loge', Appareil[3])
 
 #Plot histogramme : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper, extension)
-Plot_stat(0, 200, filename, Appareil[1], Appareil[0], Appareil[3])
+Plot_stat(100, 200, filename, Appareil[1], Appareil[0], Appareil[3])
 
 #Plot moyenne : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper,offset_spect_x,offset_spect_y , facteur_spect, extension, spectre ou pas, lambd centre, res fibre)
-Plot_Moyenne(0, 200, filename, Appareil[1], Appareil[0], -6,0.09,0.8, Appareil[3],'sp1ectre', 1567, Res_Fibre)
+Plot_Moyenne(100, 200, filename, Appareil[1], Appareil[0], -6,0.09,0.8, Appareil[3],'spectre', 1567, Res_Fibre)
 
 #Plot_Moyenne(1er fichier, dernier fichier, nom fichier,delimiter,Res_Fibre,entete a skipper, extension, lambda_centre, offset):
-Plot_corr(0,200, filename, Appareil[1], Res_Fibre, Appareil[0], Appareil[3], 1550, 2)
+Plot_corr(100,200, filename, Appareil[1], Res_Fibre, Appareil[0], Appareil[3], 1557, -40)
