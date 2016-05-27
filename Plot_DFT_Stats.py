@@ -99,15 +99,7 @@ def DeviceDetect(filename):
 #        Appareil = False
         Appareil = Oscillo_Keysight()
     return Appareil
-    
-def RecupData(filename,Appareil):
-    if Appareil[6] == 'Oscillo_autoco':
-        recup = np.loadtxt(filename, skiprows=0)
-        return recup
-    else:
-        recup = np.genfromtxt(filename, delimiter=Appareil[1], skip_header=Appareil[0], skip_footer=0)     
-        return recup, 1
-    
+        
 def normalize(fct):
     """
         Set function's maximum at 1
@@ -258,13 +250,13 @@ def Plot_corr(x_i, x_f, Nom, delimit,Res_fibre, skiphead, extension, lambda_cent
 #==============================================================================
 # Execution
 #==============================================================================
-#Selection fichier
+#Ouvre fenetre de dialogue pour le choix du premier fichier a traiter
 filename = OuvrirFenetreChoix()
 
-#Detection appareil
+#Detection appareil en fonction de son contenu
 Appareil = DeviceDetect(filename)
 
-#Edite nom en fonction du nb de digits a retirer
+#Edite nom en fonction du nb de digits a retirer ex :EditNom(C1ph00002.txt,9) -> C1ph
 filename = EditNom(filename,Appareil[2])
 
 #Determine echelle a partir de fibre dispersive utilisee
@@ -272,14 +264,14 @@ filename = EditNom(filename,Appareil[2])
 #Res_Fibre =  Fibre_Violette()
 Res_Fibre =  Fibre_Lille()
 
-#Plot (Indice initial, Indice final, .., .., Longueur onde centrale, Res_Fibre, offset pour corriger)
-Plot_color(0, 1999, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 0, 'loge', Appareil[3])
+#Plot couleur : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper, lambd centre, caract fibre, offset, log ou autre)
+Plot_color(0, 200, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 0, 'loge', Appareil[3])
 
-#Plot histogramme
-Plot_stat(0, 4999, filename, Appareil[1], Appareil[0], Appareil[3])
+#Plot histogramme : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper, extension)
+Plot_stat(0, 200, filename, Appareil[1], Appareil[0], Appareil[3])
 
-#Plot moyenne
+#Plot moyenne : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper,offset_spect_x,offset_spect_y , facteur_spect, extension, spectre ou pas, lambd centre, res fibre)
 Plot_Moyenne(0, 200, filename, Appareil[1], Appareil[0], -6,0.09,0.8, Appareil[3],'sp1ectre', 1567, Res_Fibre)
 
-#Plot_Moyenne(,offset_spect_x,offset_spect_y , facteur_spect, extension,spectrumornot, lambda_centre, Scale):
+#Plot_Moyenne(1er fichier, dernier fichier, nom fichier,delimiter,Res_Fibre,entete a skipper, extension, lambda_centre, offset):
 Plot_corr(0,200, filename, Appareil[1], Res_Fibre, Appareil[0], Appareil[3], 1550, 2)
