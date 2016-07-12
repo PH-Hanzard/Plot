@@ -162,14 +162,42 @@ def Plot_color(x_i, x_f, Nom, delimit, skiphead, lambda_centre, Scale, offset, L
         data = np.genfromtxt((Nom+'%05d'+extension)%i, delimiter=delimit, skip_header=skiphead, skip_footer=0, names=['x', 'y'])  
 
         y_norm = normalize(data['y'])
-        data['x']=((data['x'] * 1e9) / Scale) + lambda_centre + offset
+  
+
+#==============================================================================
+# Mapping      
+#==============================================================================
+        omega_0 = 2 * np.pi * cte.c / (lambda_centre)   
         
+        A = Scale[1] / 2
+        B = Scale[0]
+#        On centre en t=0
+        T = data['x'] - np.min(data['x']) - ((np.max(data['x'])-np.min(data['x']))/2) 
+        
+        B2 = (-2*A*omega_0) + B    
+        C = (A*(omega_0**2)) - (B*omega_0) - T
+        
+        
+        Delta = (B2**2) - (4*A*C)
+        
+        omega1 = (-B2 + np.sqrt(Delta) ) / (2*A)
+        
+        Lambdd1 = 2 * np.pi * cte.c / omega1    
+    
     
         if LogOrLin == 'log':
-            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=None, vmax=1.0368))
+            plt.scatter(Lambdd1*1e9, (Lambdd1*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=None, vmax=1.0368))
         else:
-            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none')
-   
+            plt.scatter(Lambdd1*1e9, (Lambdd1*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none')    
+
+
+##
+#        data['x']=((data['x'] * 1e9) / -0.429) + lambda_centre + offset
+#        if LogOrLin == 'log':
+#            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=None, vmax=1.0368))
+#        else:
+#            plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none')
+#   
         print('%d / %d'%(i,x_f-x_i))
     
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
@@ -224,7 +252,7 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead, extension,spectrumornot, lamb
         
         A = Scale[1] / 2
         B = Scale[0]
-        
+#        On centre en t=0
         T = data['x'] - np.min(data['x']) - ((np.max(data['x'])-np.min(data['x']))/2) 
         
         B2 = (-2*A*omega_0) + B    
@@ -271,7 +299,7 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead, extension,spectrumornot, lamb
     plt.ylabel("Intensity (a.u.)")
     plt.show()
 
-def Plot_corr(x_i, x_f, Nom, delimit,Res_fibre, skiphead, extension, lambda_centre, offset):
+def Plot_corr(x_i, x_f, Nom, delimit,Scale, skiphead, extension, lambda_centre):
     donnees = np.genfromtxt((Nom+'%05d'+extension)%x_i, delimiter=delimit, skip_header=skiphead, skip_footer=0)
     Matrix_2 = [[0 for x in range(x_f+1-x_i)] for x in range(int(donnees.size/2))]
 
@@ -285,14 +313,43 @@ def Plot_corr(x_i, x_f, Nom, delimit,Res_fibre, skiphead, extension, lambda_cent
     R = corrcoef(Matrix_2)
     R_f = np.rot90(R,2)
     
+    
+#    Mapping
+    omega_0 = 2 * np.pi * cte.c / (lambda_centre)   
+        
+    A = Scale[1] / 2
+    B = Scale[0]
+#        On centre en t=0
+    T = data['x'] - np.min(data['x']) - ((np.max(data['x'])-np.min(data['x']))/2) 
+    
+    B2 = (-2*A*omega_0) + B    
+    C = (A*(omega_0**2)) - (B*omega_0) - T
+    
+    
+    Delta = (B2**2) - (4*A*C)
+    
+    omega1 = (-B2 + np.sqrt(Delta) ) / (2*A)
+    
+    Lambdd1 = 2 * np.pi * cte.c / omega1    
+    l = np.linspace(0,0,1000)
+
+#On augmente la longueur du tableau en ajoutant des 0 pour  les pbs de 'out of bounds' sur la partie externe du plot
+    lambdd1 = np.concatenate((l,Lambdd1))
+    
 #pcolormesh mieux que pcolor, plus rapide
     pcolormesh(R_f, cmap='seismic')
 #pcolormesh(R_f, cmap='flag')
     colorbar()    
-    ticks_x = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format((x*0.1/(abs(Res_Fibre))+1500+offset)))
+#    On part de la fin du tableau car tps oppose a longueur d onde
+    ticks_x = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(lambdd1[lambdd1.size-x-1]*1e9))
     ax.xaxis.set_major_formatter(ticks_x)
-    ticks_y = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format((x*0.1/(abs(Res_Fibre))+1500+offset)))
-    ax.yaxis.set_major_formatter(ticks_y)
+    ticks_y = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format(lambdd1[lambdd1.size-x-1]*1e9))
+    ax.yaxis.set_major_formatter(ticks_y)    
+    
+#    ticks_x = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format((x*0.1/(abs(-0.429))+1500+offset)))
+#    ax.xaxis.set_major_formatter(ticks_x)
+#    ticks_y = matplotlib.ticker.FuncFormatter(lambda x, pos: '{0:g}'.format((x*0.1/(abs(-0.429))+1500+offset)))
+#    ax.yaxis.set_major_formatter(ticks_y)
     show()
 #==============================================================================
 # Execution
@@ -312,13 +369,13 @@ filename = EditNom(filename,Appareil[2])
 Res_Fibre =  Fibre_Lille()
 
 #Plot couleur : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper, lambd centre, caract fibre, offset, log ou autre)
-#Plot_color(0, 1995, filename, Appareil[1], Appareil[0], 1565.6, Res_Fibre, 323, 'loge', Appareil[3])
+Plot_color(0, 500, filename, Appareil[1], Appareil[0], 1573e-9, Res_Fibre, 323, 'loge', Appareil[3])
 
 #Plot histogramme : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper, extension)
-#Plot_stat(0, 1995, filename, Appareil[1], Appareil[0], Appareil[3])
+Plot_stat(0, 100, filename, Appareil[1], Appareil[0], Appareil[3])
 
 #Plot moyenne : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper,offset_spect_x,offset_spect_y , facteur_spect, extension, spectre ou pas, lambd centre, res fibre)
-Plot_Moyenne(0, 1999, filename, Appareil[1], Appareil[0], Appareil[3],'spectre', 1573e-9, Res_Fibre,5,0.07)
+Plot_Moyenne(0, 100, filename, Appareil[1], Appareil[0], Appareil[3],'spectre', 1573e-9, Res_Fibre,5,0.07)
 
 #Plot_corr(1er fichier, dernier fichier, nom fichier,delimiter,Res_Fibre,entete a skipper, extension, lambda_centre, offset):
-#Plot_corr(0,1995, filename, Appareil[1], Res_Fibre, Appareil[0], Appareil[3], 1565.6, -45)
+Plot_corr(0,500, filename, Appareil[1], Res_Fibre, Appareil[0], Appareil[3], 1573e-9)
