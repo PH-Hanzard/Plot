@@ -10,6 +10,8 @@ from pylab import pcolor, show, colorbar, xticks, yticks
 from Tkinter import Tk
 from numpy import corrcoef, sum, log, arange
 from tkFileDialog import askopenfilename
+import scipy.constants as cte
+
 #==============================================================================
 # 010316 -- PLOT SERIE COURBES SCATTERING -
 # A modifier dans Execution 
@@ -79,6 +81,12 @@ def Spectro_Anritsu():
     return To_skip, Delimit, Couleur, Nom, x, y, Id,coef
     
 def Spectro_2_4():
+    """
+        En dBm : mW = 10 ^ (dBm/10) dBm and dBW
+        are defined by forming the ratio of the power you want to express relative
+        to a reference power, which is
+        1 W for dBW and 1 mW for dBm. 
+    """
     To_skip = 30
     Delimit = ','
     Couleur = 'r'
@@ -128,9 +136,13 @@ def Fibre_Lille():
     """
         Caracteristiques fibre DFT. Retourne D * L en ns/nm
     """
-    Longueur = 1
-    D = - 429
-    return Longueur * D * 1e-3
+#    Longueur = 1
+#    D = - 429
+#    return Longueur * D * 1e-3
+#    Beta_2_L = 546e-24
+    Beta_2_L = 630e-24
+    Beta_3_L = -3.8e-36
+    return Beta_2_L,Beta_3_L
     
 def Fibre_Violette():
     """
@@ -151,7 +163,8 @@ def Plot_color(x_i, x_f, Nom, delimit, skiphead, lambda_centre, Scale, offset, L
 
         y_norm = normalize(data['y'])
         data['x']=((data['x'] * 1e9) / Scale) + lambda_centre + offset
-            
+        
+    
         if LogOrLin == 'log':
             plt.scatter(data['x'], (data['x']*0)+(i/1.), c=y_norm, cmap=cm.jet,edgecolor = 'none', norm=matplotlib.colors.LogNorm(vmin=None, vmax=1.0368))
         else:
@@ -184,7 +197,7 @@ def Plot_stat(x_i, x_f, Nom, delimit, skiphead, extension):
     plt.show()
     
     
-def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y , facteur_spect, extension,spectrumornot, lambda_centre, Scale):
+def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead, extension,spectrumornot, lambda_centre, Scale,facteur_spect,offset_spect_y):
     """
         Trace toutes les courbes
     """
@@ -202,8 +215,32 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y 
         y_norm = (data['y']) 
         Matrix[i-x_i][:] = y_norm
 #        data['x']=((data['x'] * 1e9) ) + offset
-        data['x']=((data['x']* 1e9) / Scale) + lambda_centre  + offset_spect_x       
-        ax1.plot(data['x'],y_norm, marker='.',color='c',label='',linewidth=0.0,alpha=0.2) 
+        
+#==============================================================================
+# Conversion lambda omega et calcul mapping dispersion        
+#==============================================================================
+
+        omega_0 = 2 * np.pi * cte.c / (lambda_centre)   
+        
+        A = Scale[1] / 2
+        B = Scale[0]
+        
+        T = data['x'] - np.min(data['x']) - ((np.max(data['x'])-np.min(data['x']))/2) 
+        
+        B2 = (-2*A*omega_0) + B    
+        C = (A*(omega_0**2)) - (B*omega_0) - T
+        
+        
+        Delta = (B2**2) - (4*A*C)
+        
+        omega1 = (-B2 + np.sqrt(Delta) ) / (2*A)
+        
+        Lambdd1 = 2 * np.pi * cte.c / omega1
+    
+    
+        
+#        data['x']=((data['x']* 1e9) / Scale) + lambda_centre  + offset_spect_x       
+        ax1.plot(Lambdd1*1e9,y_norm, marker='.',color='c',label='',linewidth=0.0,alpha=0.2) 
         print('%d / %d'%(i,x_f-x_i))
 
 #   Somme puis moyenne de chaque point
@@ -214,7 +251,7 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y 
     for i in range(int((donnees.size)/2)):   
         som[i] = som[i] / (x_f-x_i)
     
-    ax1.plot(data['x'],som, marker='',color='k',label='') 
+    ax1.plot(Lambdd1*1e9,som, marker='',color='k',label='') 
     
 #    Ajout spectre OSA
     
@@ -224,12 +261,13 @@ def Plot_Moyenne(x_i, x_f, Nom, delimit, skiphead,offset_spect_x,offset_spect_y 
         Appareil_spectre = DeviceDetect(FichierSpectre)
         result_spectre = RecupData(FichierSpectre,Appareil_spectre)
 #        plt.plot(result_spectre[0],result_spectre[1]) 
-        ax1.plot(result_spectre[0][:,0],(10**(result_spectre[0][:,1]/20.)*facteur_spect)+offset_spect_y,color='r') 
-    
+        ax1.plot(result_spectre[0][:,0],((10**(result_spectre[0][:,1]/10.))*facteur_spect)+offset_spect_y,color='r') 
+#        ax1.plot(result_spectre[0][:,0],(10**(result_spectre[0][:,1]/10.)),color='r') 
+
 
     plt.gca().get_xaxis().get_major_formatter().set_useOffset(False)
     plt.title('DFT Signal')
-    plt.xlabel("Time (ns)")
+    plt.xlabel("Wavelength (nm)")
     plt.ylabel("Intensity (a.u.)")
     plt.show()
 
@@ -274,13 +312,13 @@ filename = EditNom(filename,Appareil[2])
 Res_Fibre =  Fibre_Lille()
 
 #Plot couleur : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper, lambd centre, caract fibre, offset, log ou autre)
-Plot_color(100, 200, filename, Appareil[1], Appareil[0], 1567, Res_Fibre, 0, 'loge', Appareil[3])
+#Plot_color(0, 1995, filename, Appareil[1], Appareil[0], 1565.6, Res_Fibre, 323, 'loge', Appareil[3])
 
 #Plot histogramme : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper, extension)
-Plot_stat(100, 200, filename, Appareil[1], Appareil[0], Appareil[3])
+#Plot_stat(0, 1995, filename, Appareil[1], Appareil[0], Appareil[3])
 
 #Plot moyenne : (1er fichier, dernier fichier, nom fichier, delimiter, entete a skipper,offset_spect_x,offset_spect_y , facteur_spect, extension, spectre ou pas, lambd centre, res fibre)
-Plot_Moyenne(100, 200, filename, Appareil[1], Appareil[0], -6,0.09,0.8, Appareil[3],'spectre', 1567, Res_Fibre)
+Plot_Moyenne(0, 1999, filename, Appareil[1], Appareil[0], Appareil[3],'spectre', 1573e-9, Res_Fibre,5,0.07)
 
-#Plot_Moyenne(1er fichier, dernier fichier, nom fichier,delimiter,Res_Fibre,entete a skipper, extension, lambda_centre, offset):
-Plot_corr(100,200, filename, Appareil[1], Res_Fibre, Appareil[0], Appareil[3], 1557, -40)
+#Plot_corr(1er fichier, dernier fichier, nom fichier,delimiter,Res_Fibre,entete a skipper, extension, lambda_centre, offset):
+#Plot_corr(0,1995, filename, Appareil[1], Res_Fibre, Appareil[0], Appareil[3], 1565.6, -45)
